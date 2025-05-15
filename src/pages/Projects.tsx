@@ -17,8 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { ProjectStatus } from "@/types";
 
-const statusOptions: { value: ProjectStatus | ""; label: string }[] = [
-  { value: "", label: "모든 상태" },
+const statusOptions: { value: ProjectStatus | "all"; label: string }[] = [
+  { value: "all", label: "모든 상태" },
   { value: "planning", label: "기획 중" },
   { value: "design", label: "설계 중" },
   { value: "development", label: "개발 중" },
@@ -33,7 +33,7 @@ const Projects: React.FC = () => {
   const navigate = useNavigate();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "">("");
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   if (!isAuthenticated) {
@@ -46,7 +46,7 @@ const Projects: React.FC = () => {
 
   const filteredProjects = projects.filter((project) => {
     // Apply status filter
-    if (statusFilter && project.status !== statusFilter) {
+    if (statusFilter !== "all" && project.status !== statusFilter) {
       return false;
     }
 
@@ -98,7 +98,7 @@ const Projects: React.FC = () => {
         </div>
         <Select
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as ProjectStatus | "")}
+          onValueChange={(value) => setStatusFilter(value as ProjectStatus | "all")}
         >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="상태로 필터링" />
