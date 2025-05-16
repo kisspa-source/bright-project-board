@@ -1,14 +1,13 @@
-
+// User types
 export interface User {
   id: string;
   name: string;
   role: 'admin' | 'user';
   email: string;
-  avatarUrl?: string;
+  avatarUrl: string;
 }
 
-export type ProjectStatus = 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
-
+// Project types
 export interface Project {
   id: string;
   projectCode: string;
@@ -16,13 +15,14 @@ export interface Project {
   clientName: string;
   startDate: string;
   endDate: string;
-  status: ProjectStatus;
+  status: 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
   designerIds: string[];
   developerIds: string[];
   createdBy: string;
-  description?: string;
+  description: string;
 }
 
+// Gantt chart task types
 export interface GanttTask {
   id: string;
   name: string;
@@ -30,21 +30,24 @@ export interface GanttTask {
   end: Date;
   progress: number;
   dependencies?: string;
-  type?: string;
-  project?: string;
-  status?: ProjectStatus;
+  type?: 'task' | 'milestone' | 'project';
+  project: string;
+  status?: 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
+  assignee?: string;
 }
 
+// Filter options type
 export interface FilterOptions {
   client?: string;
-  status?: ProjectStatus;
+  status?: 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
   dateRange?: {
-    start: string;
-    end: string;
+    start: Date;
+    end: Date;
   };
   assignee?: string;
 }
 
+// Dashboard stats type
 export interface DashboardStats {
   totalProjects: number;
   inProgressProjects: number;

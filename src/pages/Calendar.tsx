@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from "date-fns";
-import CalendarView from "@/components/calendar/CalendarView";
+import EnhancedGanttChart from "@/components/calendar/EnhancedGanttChart";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 type ViewMode = "day" | "week" | "month" | "quarter";
 
@@ -149,7 +150,7 @@ const Calendar: React.FC = () => {
             </div>
           </div>
           
-          <CalendarView 
+          <EnhancedGanttChart 
             tasks={ganttTasks} 
             viewMode={viewMode} 
             currentDate={currentDate}

@@ -1,4 +1,3 @@
-
 import { Project, User, GanttTask, DashboardStats } from '../types';
 
 // Mock Users
@@ -119,6 +118,7 @@ export const ganttTasks: GanttTask[] = [
     progress: 100,
     project: '1',
     status: 'completed',
+    assignee: '김관리자'
   },
   {
     id: '1.1',
@@ -129,6 +129,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '',
     type: 'task',
     project: '1',
+    assignee: '이매니저'
   },
   {
     id: '1.2',
@@ -139,6 +140,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '1.1',
     type: 'task',
     project: '1',
+    assignee: '박디자이너'
   },
   {
     id: '1.3',
@@ -149,6 +151,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '1.2',
     type: 'task',
     project: '1',
+    assignee: '최개발자'
   },
   {
     id: '1.4',
@@ -159,6 +162,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '1.3',
     type: 'task',
     project: '1',
+    assignee: '정테스터'
   },
   {
     id: '2',
@@ -168,6 +172,7 @@ export const ganttTasks: GanttTask[] = [
     progress: 65,
     project: '2',
     status: 'development',
+    assignee: '김관리자'
   },
   {
     id: '2.1',
@@ -178,6 +183,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '',
     type: 'task',
     project: '2',
+    assignee: '이매니저'
   },
   {
     id: '2.2',
@@ -188,6 +194,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '2.1',
     type: 'task',
     project: '2',
+    assignee: '박디자이너'
   },
   {
     id: '2.3',
@@ -198,6 +205,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '2.2',
     type: 'task',
     project: '2',
+    assignee: '최개발자'
   },
   {
     id: '2.4',
@@ -208,6 +216,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '2.2',
     type: 'task',
     project: '2',
+    assignee: '최개발자'
   },
   {
     id: '2.5',
@@ -218,6 +227,7 @@ export const ganttTasks: GanttTask[] = [
     dependencies: '2.3,2.4',
     type: 'task',
     project: '2',
+    assignee: '정테스터'
   },
   // Add more tasks for other projects
 ];
