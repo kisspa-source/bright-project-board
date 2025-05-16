@@ -1,3 +1,4 @@
+
 // User types
 export interface User {
   id: string;
@@ -7,6 +8,9 @@ export interface User {
   avatarUrl: string;
 }
 
+// Project status type
+export type ProjectStatus = 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
+
 // Project types
 export interface Project {
   id: string;
@@ -15,7 +19,7 @@ export interface Project {
   clientName: string;
   startDate: string;
   endDate: string;
-  status: 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
+  status: ProjectStatus;
   designerIds: string[];
   developerIds: string[];
   createdBy: string;
@@ -32,14 +36,14 @@ export interface GanttTask {
   dependencies?: string;
   type?: 'task' | 'milestone' | 'project';
   project: string;
-  status?: 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
+  status?: ProjectStatus;
   assignee?: string;
 }
 
 // Filter options type
 export interface FilterOptions {
   client?: string;
-  status?: 'planning' | 'design' | 'development' | 'testing' | 'completed' | 'onhold';
+  status?: ProjectStatus;
   dateRange?: {
     start: Date;
     end: Date;
