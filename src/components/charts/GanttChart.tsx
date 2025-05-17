@@ -100,18 +100,13 @@ const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick }) => {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div 
-        className="gantt-chart relative mt-8" 
-        ref={chartRef}
-        style={{ minWidth: `${daysArray.length * 40}px` }}
-      >
-        {/* Header - Days */}
-        <div className="flex border-b">
+    <div className="flex flex-col">
+      <div className="w-full border-b">
+        <div className="flex">
           <div className="w-64 flex-shrink-0 px-4 py-2 border-r font-medium">
             Task
           </div>
-          <div className="flex-1 flex">
+          <div className="flex-1 flex overflow-x-auto">
             {daysArray.map((day, index) => (
               <div 
                 key={index} 
@@ -120,17 +115,23 @@ const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick }) => {
                     ? 'bg-gray-100' 
                     : ''
                 }`}
-                style={{ width: `${getDayWidth()}px` }}
+                style={{ width: `${getDayWidth()}px`, minWidth: '40px' }}
               >
-                <div className="whitespace-nowrap">{format(day, 'MMM d')}</div>
+                <div className="whitespace-nowrap">{format(day, 'yy-MM-dd')}</div>
                 <div className="text-gray-500">{format(day, 'EEE')}</div>
               </div>
             ))}
           </div>
         </div>
-        
-        {/* Tasks */}
-        <div className="relative">
+      </div>
+      
+      {/* Task content with fixed height and overflow */}
+      <div className="overflow-y-auto max-h-[300px]">
+        <div 
+          className="relative" 
+          ref={chartRef}
+          style={{ minWidth: `${daysArray.length * 40}px` }}
+        >
           {tasks.map((task, index) => (
             <div 
               key={task.id} 
@@ -140,7 +141,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick }) => {
                 <div className="font-medium">{task.name}</div>
                 {task.type !== 'task' && (
                   <div className="text-xs text-gray-500">
-                    {format(task.start, 'yyyy-MM-dd')} ~ {format(task.end, 'yyyy-MM-dd')}
+                    {format(task.start, 'yy-MM-dd')} ~ {format(task.end, 'yy-MM-dd')}
                   </div>
                 )}
               </div>

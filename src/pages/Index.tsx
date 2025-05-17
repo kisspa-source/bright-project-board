@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="bg-white p-6 rounded-lg shadow-sm overflow-hidden">
             <h3 className="text-lg font-medium mb-4">프로젝트 일정</h3>
             <GanttChart tasks={mainProjectTasks} />
           </div>
