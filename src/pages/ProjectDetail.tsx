@@ -213,9 +213,9 @@ const ProjectDetail: React.FC = () => {
       </div>
 
       <ProjectDialog
-        project={project}
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
+        project={project}
       />
 
       <AlertDialog

@@ -323,7 +323,7 @@ const Calendar: React.FC = () => {
             
             {/* Right gantt chart */}
             <div className="flex-1 overflow-hidden" ref={ganttContainerRef}>
-              <ScrollArea className="h-full" orientation="horizontal">
+              <ScrollArea className="h-full">
                 <div className="flex flex-col">
                   {filteredTasks.map((task) => (
                     <div key={task.id} className="flex border-b min-h-[41px] hover:bg-muted/10">

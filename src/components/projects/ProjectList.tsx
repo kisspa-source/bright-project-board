@@ -161,9 +161,9 @@ const ProjectList: React.FC<ProjectListProps> = ({
 
       {editingProject && (
         <ProjectDialog
-          project={editingProject}
           isOpen={!!editingProject}
           onClose={() => setEditingProject(null)}
+          project={editingProject}
         />
       )}
 

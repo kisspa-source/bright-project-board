@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -43,9 +44,10 @@ interface ProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitData?: (data: Omit<Project, 'id'>) => void;
+  project?: Project; // 추가: 기존 프로젝트 데이터 (수정 시)
 }
 
-const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, onSubmitData }) => {
+const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, onSubmitData, project }) => {
   const { user } = useAuth();
   
   const form = useForm<z.infer<typeof projectFormSchema>>({
@@ -63,22 +65,45 @@ const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, onSubmit
     },
   });
 
+  // 프로젝트 데이터가 제공되면 폼 값 설정
+  useEffect(() => {
+    if (project) {
+      form.reset({
+        projectCode: project.projectCode,
+        name: project.name,
+        clientName: project.clientName,
+        startDate: new Date(project.startDate),
+        endDate: new Date(project.endDate),
+        status: project.status,
+        designerIds: project.designerIds,
+        developerIds: project.developerIds,
+        description: project.description || "",
+      });
+    }
+  }, [project, form]);
+
   const submitData = () => {
     if (!form.formState.isValid) return;
 
     const data = form.getValues();
 
-    // Format dates properly
+    // 모든 필수 필드가 있는지 확인
     const formattedData = {
-      ...data,
+      projectCode: data.projectCode, // 필수 필드 명시적 할당
+      name: data.name, // 필수 필드 명시적 할당
+      clientName: data.clientName, // 필수 필드 명시적 할당
       startDate: formatISO(data.startDate, { representation: 'date' }),
       endDate: formatISO(data.endDate, { representation: 'date' }),
-      // Ensure description is always present (empty string if not provided)
+      status: data.status, // 필수 필드 명시적 할당
+      designerIds: data.designerIds,
+      developerIds: data.developerIds,
       description: data.description || "",
       createdBy: user ? user.name : "Unknown User",
     };
 
-    onSubmitData(formattedData);
+    if (onSubmitData) {
+      onSubmitData(formattedData);
+    }
     onClose();
   };
 
@@ -86,9 +111,9 @@ const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, onSubmit
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>새 프로젝트</DialogTitle>
+          <DialogTitle>{project ? '프로젝트 수정' : '새 프로젝트'}</DialogTitle>
           <DialogDescription>
-            새 프로젝트를 추가하세요.
+            {project ? '프로젝트를 수정하세요.' : '새 프로젝트를 추가하세요.'}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -187,7 +212,7 @@ const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, onSubmit
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={submitData}>저장</Button>
+          <Button type="button" onClick={submitData}>{project ? '수정' : '저장'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
