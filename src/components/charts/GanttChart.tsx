@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GanttTask } from '@/types';
 import { format } from 'date-fns';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface GanttChartProps {
   tasks: GanttTask[];
@@ -91,6 +92,20 @@ const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick }) => {
     };
   };
 
+  // Convert English day names to Korean
+  const getKoreanWeekday = (date: Date): string => {
+    const dayMap: Record<number, string> = {
+      0: '일',
+      1: '월',
+      2: '화',
+      3: '수',
+      4: '목',
+      5: '금',
+      6: '토',
+    };
+    return dayMap[date.getDay()];
+  };
+
   if (tasks.length === 0) {
     return (
       <div className="text-center p-10 text-gray-500">
@@ -100,17 +115,42 @@ const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick }) => {
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="w-full border-b">
-        <div className="flex">
-          <div className="w-64 flex-shrink-0 px-4 py-2 border-r font-medium">
+    <ResizablePanelGroup direction="horizontal" className="min-h-[300px]">
+      {/* Left panel (Task names) - Resizable */}
+      <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+        <div className="w-full h-full flex flex-col">
+          <div className="px-4 py-2 font-medium border-r border-b">
             Task
           </div>
-          <div className="flex-1 flex overflow-x-auto">
+          <div className="overflow-y-auto flex-1">
+            {tasks.map((task) => (
+              <div key={task.id} className="border-b hover:bg-gray-50">
+                <div className="px-4 py-3 border-r">
+                  <div className="font-medium">{task.name}</div>
+                  {task.type !== 'task' && (
+                    <div className="text-xs text-gray-500">
+                      {format(task.start, 'yy-MM-dd')} ~ {format(task.end, 'yy-MM-dd')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </ResizablePanel>
+      
+      {/* Resize handle */}
+      <ResizableHandle withHandle />
+      
+      {/* Right panel (Timeline) - Resizable */}
+      <ResizablePanel defaultSize={70}>
+        <div className="w-full h-full flex flex-col">
+          {/* Date headers - Scrollable horizontally */}
+          <div className="flex overflow-x-auto border-b">
             {daysArray.map((day, index) => (
               <div 
                 key={index} 
-                className={`px-2 py-2 text-center text-xs font-medium ${
+                className={`px-2 py-2 text-center text-xs font-medium flex-shrink-0 ${
                   day.getDay() === 0 || day.getDay() === 6 
                     ? 'bg-gray-100' 
                     : ''
@@ -118,71 +158,59 @@ const GanttChart: React.FC<GanttChartProps> = ({ tasks, onTaskClick }) => {
                 style={{ width: `${getDayWidth()}px`, minWidth: '40px' }}
               >
                 <div className="whitespace-nowrap">{format(day, 'yy-MM-dd')}</div>
-                <div className="text-gray-500">{format(day, 'EEE')}</div>
+                <div className="text-gray-500">{getKoreanWeekday(day)}</div>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-      
-      {/* Task content with fixed height and overflow */}
-      <div className="overflow-y-auto max-h-[300px]">
-        <div 
-          className="relative" 
-          ref={chartRef}
-          style={{ minWidth: `${daysArray.length * 40}px` }}
-        >
-          {tasks.map((task, index) => (
-            <div 
-              key={task.id} 
-              className="flex border-b hover:bg-gray-50"
-            >
-              <div className="w-64 flex-shrink-0 px-4 py-3 border-r truncate">
-                <div className="font-medium">{task.name}</div>
-                {task.type !== 'task' && (
-                  <div className="text-xs text-gray-500">
-                    {format(task.start, 'yy-MM-dd')} ~ {format(task.end, 'yy-MM-dd')}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 relative" style={{ height: '50px' }}>
-                {/* Task bar */}
-                <div
-                  className={`absolute top-1/2 -translate-y-1/2 rounded-md h-6 ${getTaskColor(task)}`}
-                  style={getTaskBarStyle(task)}
-                  onClick={() => onTaskClick && onTaskClick(task)}
+          
+          {/* Task timeline - Scrollable both horizontally and vertically */}
+          <div className="overflow-y-auto flex-1" ref={chartRef}>
+            <div className="relative overflow-x-auto" style={{ minWidth: `${daysArray.length * 40}px` }}>
+              {tasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className="flex border-b hover:bg-gray-50"
                 >
-                  <div className="px-2 text-xs text-white font-medium whitespace-nowrap overflow-hidden text-ellipsis h-full flex items-center">
-                    {task.progress < 100 ? `${task.progress}%` : '✓'}
+                  <div className="relative" style={{ height: '50px', width: '100%' }}>
+                    {/* Task bar */}
+                    <div
+                      className={`absolute top-1/2 -translate-y-1/2 rounded-md h-6 ${getTaskColor(task)}`}
+                      style={getTaskBarStyle(task)}
+                      onClick={() => onTaskClick && onTaskClick(task)}
+                    >
+                      <div className="px-2 text-xs text-white font-medium whitespace-nowrap overflow-hidden text-ellipsis h-full flex items-center">
+                        {task.progress < 100 ? `${task.progress}%` : '✓'}
+                      </div>
+                    </div>
+                    
+                    {/* Task dependencies */}
+                    {task.dependencies && task.dependencies.split(',').map(dependency => {
+                      const dependentTask = tasks.find(t => t.id === dependency.trim());
+                      if (!dependentTask) return null;
+                      
+                      return (
+                        <div 
+                          key={`${task.id}-${dependency}`} 
+                          className="absolute top-1/2 h-0.5 bg-gray-300"
+                          style={{
+                            left: `${getTaskBarStyle(dependentTask).left}`,
+                            width: `${
+                              parseInt(getTaskBarStyle(task).left) - 
+                              parseInt(getTaskBarStyle(dependentTask).left)
+                            }px`,
+                            transform: 'translateY(-50%)'
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
-                
-                {/* Task dependencies */}
-                {task.dependencies && task.dependencies.split(',').map(dependency => {
-                  const dependentTask = tasks.find(t => t.id === dependency.trim());
-                  if (!dependentTask) return null;
-                  
-                  return (
-                    <div 
-                      key={`${task.id}-${dependency}`} 
-                      className="absolute top-1/2 h-0.5 bg-gray-300"
-                      style={{
-                        left: `${getTaskBarStyle(dependentTask).left}`,
-                        width: `${
-                          parseInt(getTaskBarStyle(task).left) - 
-                          parseInt(getTaskBarStyle(dependentTask).left)
-                        }px`,
-                        transform: 'translateY(-50%)'
-                      }}
-                    />
-                  );
-                })}
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
