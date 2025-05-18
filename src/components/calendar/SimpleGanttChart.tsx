@@ -200,7 +200,7 @@ const SimpleGanttChart: React.FC<SimpleGanttChartProps> = ({
       <ResizablePanel defaultSize={70}>
         <div className="h-full relative">
           <div className="sticky top-0 bg-gray-50 z-10">
-            <ScrollArea orientation="horizontal" className="overflow-x-auto">
+            <ScrollArea className="overflow-x-auto">
               <table className="border-collapse min-w-max">
                 <thead>
                   <tr>
@@ -222,7 +222,7 @@ const SimpleGanttChart: React.FC<SimpleGanttChartProps> = ({
             </ScrollArea>
           </div>
           
-          <ScrollArea orientation="horizontal" className="h-[calc(100%-43px)]">
+          <ScrollArea className="h-[calc(100%-43px)]">
             <div className="min-w-max">
               <table className="border-collapse min-w-max">
                 <tbody>
