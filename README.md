@@ -1,5 +1,21 @@
 # Welcome to your Lovable project
+# 프로젝트 관리 시스템 (PMS)
 
+## 개요
+이 프로젝트는 사용자 인증, 프로젝트 관리, 간트 차트 기능을 제공하는 프로젝트 관리 시스템입니다.
+
+## 기술 스택
+- Frontend: React, TypeScript, Vite, TailwindCSS, Shadcn/UI
+- Backend: Spring Boot (예정)
+- Database: Supabase
+
+## 설치 및 실행
+
+### 사전 요구사항
+- Node.js 18 이상
+- npm 또는 yarn
+
+### 설치
 ## Project info
 
 **URL**: https://lovable.dev/projects/2990e8a7-ea5b-4508-972b-f8f1556ec7d8

@@ -1,4 +1,116 @@
+import { useState } from 'react';
+import { Layout } from '../components/layout/Layout';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { ProjectCard } from '../components/projects/ProjectCard';
+import { ProjectForm } from '../components/projects/ProjectForm';
+import { useAuth } from '../context/AuthContext';
+import { useProjects } from '../context/ProjectContext';
+import { NewProject } from '../lib/api/projects';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { Loader2, AlertCircle, Plus, Search } from 'lucide-react';
 
+const Projects = () => {
+  const { user } = useAuth();
+  const { projects, isLoading, error, addProject } = useProjects();
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleCreateProject = async (data: Omit<NewProject, 'created_by'>) => {
+    if (!user) return;
+    
+    const newProject = {
+      ...data,
+      created_by: user.id
+    };
+    
+    await addProject(newProject);
+  };
+
+  // 프로젝트 필터링
+  const filteredProjects = projects.filter(project => {
+    const query = searchQuery.toLowerCase();
+    return (
+      project.name.toLowerCase().includes(query) ||
+      project.code.toLowerCase().includes(query) ||
+      project.client.toLowerCase().includes(query)
+    );
+  });
+
+  return (
+    <Layout>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">내 프로젝트</h1>
+          <p className="text-gray-500 mt-1">모든 프로젝트를 관리하세요.</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <div className="relative w-full sm:w-auto">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="프로젝트 검색..."
+              className="pl-8 w-full sm:w-[250px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button onClick={() => setIsProjectFormOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            새 프로젝트
+          </Button>
+        </div>
+      </div>
+      
+      {isLoading ? (
+        <div className="flex justify-center items-center h-60">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+          <span className="ml-2">프로젝트 로딩 중...</span>
+        </div>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            프로젝트를 불러오는 중 오류가 발생했습니다. 나중에 다시 시도해 주세요.
+          </AlertDescription>
+        </Alert>
+      ) : filteredProjects.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredProjects.map(project => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      ) : searchQuery ? (
+        <Card className="p-6 text-center">
+          <p className="text-gray-500">
+            "{searchQuery}" 검색 결과가 없습니다.
+          </p>
+        </Card>
+      ) : (
+        <Card className="p-6 text-center">
+          <p className="text-gray-500 mb-4">
+            아직 프로젝트가 없습니다. 새 프로젝트를 생성해 보세요!
+          </p>
+          <Button onClick={() => setIsProjectFormOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            새 프로젝트 생성하기
+          </Button>
+        </Card>
+      )}
+      
+      <ProjectForm
+        isOpen={isProjectFormOpen}
+        onClose={() => setIsProjectFormOpen(false)}
+        onSubmit={handleCreateProject}
+      />
+    </Layout>
+  );
+};
+
+export default Projects;
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useProjects } from "@/context/ProjectContext";

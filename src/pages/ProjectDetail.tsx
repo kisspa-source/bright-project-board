@@ -1,4 +1,274 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Layout } from '../components/layout/Layout';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { ProjectForm } from '../components/projects/ProjectForm';
+import { getProjectById, updateProject, Project } from '../lib/api/projects';
+import { useAuth } from '../context/AuthContext';
+import { useProjects } from '../context/ProjectContext';
+import { 
+  CalendarDays, 
+  Users, 
+  ListTodo, 
+  Settings, 
+  Edit, 
+  ArrowLeft, 
+  Loader2,
+  AlertCircle,
+  Building
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
+// 프로젝트 상태 텍스트 변환
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'PLANNING':
+      return '기획 중';
+    case 'IN_PROGRESS':
+      return '진행 중';
+    case 'COMPLETED':
+      return '완료됨';
+    case 'ON_HOLD':
+      return '보류 중';
+    default:
+      return status;
+  }
+};
+
+// 프로젝트 상태에 따른 배지 색상 결정
+const getStatusBadgeVariant = (status: string) => {
+  switch (status) {
+    case 'PLANNING':
+      return 'secondary';
+    case 'IN_PROGRESS':
+      return 'default';
+    case 'COMPLETED':
+      return 'success';
+    case 'ON_HOLD':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+};
+
+const ProjectDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { updateProject: updateProjectInContext } = useProjects();
+  
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const { data, error } = await getProjectById(id);
+        
+        if (error) {
+          throw new Error('프로젝트를 불러오는 중 오류가 발생했습니다.');
+        }
+        
+        if (!data) {
+          throw new Error('프로젝트를 찾을 수 없습니다.');
+        }
+        
+        setProject(data);
+      } catch (err) {
+        console.error('프로젝트 상세 조회 오류:', err);
+        setError(err instanceof Error ? err : new Error('알 수 없는 오류가 발생했습니다.'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProject();
+  }, [id]);
+  
+  const handleProjectUpdate = async (updatedData: Partial<Project>) => {
+    if (!id || !project) return;
+    
+    try {
+      const { data, error } = await updateProject(id, updatedData);
+      
+      if (error) {
+        throw new Error('프로젝트 업데이트 중 오류가 발생했습니다.');
+      }
+      
+      setProject(data);
+      updateProjectInContext(id, updatedData);
+    } catch (err) {
+      console.error('프로젝트 업데이트 오류:', err);
+      throw err;
+    }
+  };
+  
+  const isCreator = user?.id === project?.created_by;
+  
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+          <span className="ml-2">프로젝트 불러오는 중...</span>
+        </div>
+      </Layout>
+    );
+  }
+  
+  if (error || !project) {
+    return (
+      <Layout>
+        <div className="mb-4">
+          <Button variant="outline" onClick={() => navigate('/projects')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            프로젝트 목록으로
+          </Button>
+        </div>
+        
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error?.message || '프로젝트를 찾을 수 없습니다.'}
+          </AlertDescription>
+        </Alert>
+      </Layout>
+    );
+  }
+  
+  return (
+    <Layout>
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Button variant="outline" onClick={() => navigate('/projects')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            프로젝트 목록으로
+          </Button>
+          
+          {isCreator && (
+            <Button onClick={() => setIsEditFormOpen(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              프로젝트 편집
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-2xl">{project.name}</CardTitle>
+                  <Badge variant={getStatusBadgeVariant(project.status)}>
+                    {getStatusText(project.status)}
+                  </Badge>
+                </div>
+                <p className="text-gray-500">{project.code}</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start">
+                <Building className="h-5 w-5 text-gray-500 mt-0.5 mr-2" />
+                <div>
+                  <h3 className="text-sm font-medium">고객사</h3>
+                  <p>{project.client}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start">
+                <CalendarDays className="h-5 w-5 text-gray-500 mt-0.5 mr-2" />
+                <div>
+                  <h3 className="text-sm font-medium">프로젝트 기간</h3>
+                  <p>
+                    {format(new Date(project.start_date), 'yyyy년 MM월 dd일', { locale: ko })}
+                    {' ~ '}
+                    {format(new Date(project.end_date), 'yyyy년 MM월 dd일', { locale: ko })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Tabs defaultValue="tasks">
+        <TabsList className="mb-4">
+          <TabsTrigger value="tasks">
+            <ListTodo className="h-4 w-4 mr-2" />
+            작업
+          </TabsTrigger>
+          <TabsTrigger value="members">
+            <Users className="h-4 w-4 mr-2" />
+            팀원
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="h-4 w-4 mr-2" />
+            설정
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tasks">
+          <Card>
+            <CardHeader>
+              <CardTitle>작업 목록</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">아직 등록된 작업이 없습니다.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="members">
+          <Card>
+            <CardHeader>
+              <CardTitle>팀원 목록</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">아직 등록된 팀원이 없습니다.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>프로젝트 설정</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">프로젝트 설정 기능은 개발 중입니다.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      <ProjectForm
+        isOpen={isEditFormOpen}
+        onClose={() => setIsEditFormOpen(false)}
+        onSubmit={handleProjectUpdate}
+        initialData={project}
+        title="프로젝트 수정"
+      />
+    </Layout>
+  );
+};
+
+export default ProjectDetail;
 import React, { useState } from "react";
 import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useProjects } from "@/context/ProjectContext";

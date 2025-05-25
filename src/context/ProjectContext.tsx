@@ -1,4 +1,135 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+import { Project, getProjects, createProject, updateProject, deleteProject } from '../lib/api/projects';
+import { useAuth } from './AuthContext';
 
+type ProjectContextType = {
+  projects: Project[];
+  isLoading: boolean;
+  error: Error | null;
+  refreshProjects: () => Promise<void>;
+  addProject: (project: Omit<Project, 'id' | 'created_at' | 'created_by'>) => Promise<Project | null>;
+  updateProject: (id: string, project: Partial<Project>) => Promise<Project | null>;
+  removeProject: (id: string) => Promise<boolean>;
+};
+
+const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
+
+export const ProjectProvider = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const refreshProjects = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { data, error } = await getProjects();
+      
+      if (error) {
+        throw new Error('프로젝트 목록을 가져오는 중 오류가 발생했습니다.');
+      }
+      
+      setProjects(data || []);
+    } catch (err) {
+      console.error('프로젝트 로딩 오류:', err);
+      setError(err instanceof Error ? err : new Error('알 수 없는 오류가 발생했습니다.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      refreshProjects();
+    }
+  }, [user]);
+
+  const addProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'created_by'>) => {
+    if (!user) return null;
+    
+    try {
+      const newProject = {
+        ...projectData,
+        created_by: user.id
+      };
+      
+      const { data, error } = await createProject(newProject);
+      
+      if (error) {
+        throw new Error('프로젝트 생성 중 오류가 발생했습니다.');
+      }
+      
+      setProjects(prev => [data!, ...prev]);
+      return data!;
+    } catch (err) {
+      console.error('프로젝트 생성 오류:', err);
+      setError(err instanceof Error ? err : new Error('알 수 없는 오류가 발생했습니다.'));
+      return null;
+    }
+  };
+
+  const updateProjectItem = async (id: string, projectData: Partial<Project>) => {
+    if (!user) return null;
+    
+    try {
+      const { data, error } = await updateProject(id, projectData);
+      
+      if (error) {
+        throw new Error('프로젝트 업데이트 중 오류가 발생했습니다.');
+      }
+      
+      setProjects(prev => prev.map(p => p.id === id ? data! : p));
+      return data!;
+    } catch (err) {
+      console.error('프로젝트 업데이트 오류:', err);
+      setError(err instanceof Error ? err : new Error('알 수 없는 오류가 발생했습니다.'));
+      return null;
+    }
+  };
+
+  const removeProject = async (id: string) => {
+    if (!user) return false;
+    
+    try {
+      const { error } = await deleteProject(id);
+      
+      if (error) {
+        throw new Error('프로젝트 삭제 중 오류가 발생했습니다.');
+      }
+      
+      setProjects(prev => prev.filter(p => p.id !== id));
+      return true;
+    } catch (err) {
+      console.error('프로젝트 삭제 오류:', err);
+      setError(err instanceof Error ? err : new Error('알 수 없는 오류가 발생했습니다.'));
+      return false;
+    }
+  };
+
+  const value = {
+    projects,
+    isLoading,
+    error,
+    refreshProjects,
+    addProject,
+    updateProject: updateProjectItem,
+    removeProject
+  };
+
+  return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
+};
+
+export const useProjects = () => {
+  const context = useContext(ProjectContext);
+  if (context === undefined) {
+    throw new Error('useProjects는 ProjectProvider 내부에서만 사용할 수 있습니다.');
+  }
+  return context;
+};
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Project, FilterOptions, GanttTask } from '../types';
 import { projects as mockProjects, ganttTasks as mockGanttTasks } from '../data/mockData';
