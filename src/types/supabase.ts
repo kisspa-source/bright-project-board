@@ -116,6 +116,110 @@ export interface Database {
           created_at?: string
         }
       }
+      bookmarks: {
+        Row: {
+          id: string
+          user_id: string
+          url: string
+          title: string
+          description: string | null
+          image_url: string | null
+          created_at: string
+          updated_at: string
+          tags: string[] | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          url: string
+          title: string
+          description?: string | null
+          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+          tags?: string[] | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          url?: string
+          title?: string
+          description?: string | null
+          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+          tags?: string[] | null
+        }
+      }
+      collections: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          cover_image: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          description?: string | null
+          cover_image?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          cover_image?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      collection_bookmarks: {
+        Row: {
+          collection_id: string
+          bookmark_id: string
+          created_at: string
+        }
+        Insert: {
+          collection_id: string
+          bookmark_id: string
+          created_at?: string
+        }
+        Update: {
+          collection_id?: string
+          bookmark_id?: string
+          created_at?: string
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          nickname: string | null
+          avatar_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          nickname?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nickname?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
