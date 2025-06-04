@@ -190,9 +190,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               aria-label="User menu"
             >
               <Avatar>
-                <AvatarImage src={user?.avatarUrl} alt={user?.name || "User"} />
+                <AvatarImage src={user?.avatar_url || ''} alt={user?.nickname || 'User'} />
                 <AvatarFallback>
-                  {user?.name ? getInitials(user.name) : "U"}
+                  {user?.nickname ? getInitials(user.nickname) : 'U'}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -200,16 +200,18 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name}</p>
+                <p className="text-sm font-medium leading-none">{user?.nickname}</p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user?.email}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              <span>프로필</span>
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>프로필</span>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
