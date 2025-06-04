@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { upsertProfile } from '@/lib/api/profiles';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ProfilePage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateProfile } = useAuth();
   const [nickname, setNickname] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
 
@@ -20,7 +21,17 @@ const ProfilePage = () => {
   if (!isAuthenticated || !user) return null;
 
   const handleSave = async () => {
-    await upsertProfile({ id: user.id, nickname, avatar_url: avatarUrl });
+    try {
+      const updated = await upsertProfile({
+        id: user.id,
+        nickname,
+        avatar_url: avatarUrl,
+      });
+      updateProfile(updated);
+      toast.success('프로필이 저장되었습니다.');
+    } catch (error) {
+      toast.error('프로필 저장에 실패했습니다.');
+    }
   };
 
   return (
